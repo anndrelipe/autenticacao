@@ -1,11 +1,12 @@
 import "dotenv/config";
 import express from "express";
 import conexaoMariadb from "../databases/mariadbConnection.js";
+import userRouter from "../routes/userRouter.js";
 
 const app = express();
 const mariadb = await conexaoMariadb();
 
-app.use(express.json());
+app.use(express.json(), userRouter);
 
 mariadb.connect((err) => {
     if (err) {
