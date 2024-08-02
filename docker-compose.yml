@@ -1,7 +1,7 @@
 services:
   database:
     image: mariadb:latest
-    container_name: mariadb-ct
+    container_name: maria-db
     ports:
       - "3306:3306"
     volumes:
