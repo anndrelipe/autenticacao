@@ -1,8 +1,8 @@
 import conexaoMariadb from "../databases/mariadbConnection.js";
 import md5 from "md5";
+import auth from "basic-auth";
+
 const mysql = await conexaoMariadb();
-
-
 class UserController {
 
     static async cadastraUsuario (req, res) {
@@ -33,12 +33,28 @@ class UserController {
     }
 
     static async validaUsuario (req, res) {
-        const password = 1234;
-        if (req.body.password != password) {
-            res.status(401).json({status: 401, message: "Unauthorized", content: "Usuário e/ou senha invalido(s)"});
-            return
-        }
-        res.status(200).json({status: 200, message: "OK", content: "Usuário validado!"});
+        const user = auth(req);
+        const cript_password = md5(user.pass);
+
+        const query = `SELECT username, password FROM user WHERE username = "${user.name}";`
+
+        mysql.query(query, (err, result) => {
+            if (err) {
+                console.log(err);
+                return
+            }
+
+            if (result.length > 0) {
+                if (result[0].password == cript_password) {
+                    res.status(200).json({status: 200, message: "OK", content: "Usuário validado!"});
+                } else {
+                    res.status(401).json({status: 401, message: "Unauthorized", content: `Senha inválida para username: ${user.name}`});
+                }
+            } else { 
+                res.status(404).json({status: 404, message: "Not Found", content: "Esse usuário não pode ser encontrado no banco de dados."});
+                return
+            }
+        })
     }
 }
 
